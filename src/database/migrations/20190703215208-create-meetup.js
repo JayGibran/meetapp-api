@@ -7,8 +7,12 @@ module.exports = {
         autoIncrement: true,
         primaryKey: true,
       },
-      description: {
+      title: {
         type: Sequelize.STRING,
+        allowNull: false,
+      },
+      description: {
+        type: Sequelize.TEXT,
         allowNull: false,
       },
       location: {
