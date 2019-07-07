@@ -3,6 +3,9 @@ import { startOfHour, isBefore } from 'date-fns';
 
 import Subscription from '../models/Subscription';
 import Meetup from '../models/Meetup';
+import User from '../models/User';
+
+import Mail from '../../lib/Mail';
 
 class SubscriptionController {
   async create(req, res) {
@@ -16,7 +19,9 @@ class SubscriptionController {
       return res.json({ error: err.errors });
     }
 
-    const meetup = await Meetup.findByPk(req.body.meetup_id);
+    const meetup = await Meetup.findByPk(req.body.meetup_id, {
+      include: [{ model: User, as: 'user', attributes: ['name', 'email'] }],
+    });
 
     if (!meetup) {
       return res.status(400).json({ error: 'This meetup does not exist' });
@@ -57,6 +62,12 @@ class SubscriptionController {
     }
 
     const savedSubscription = await Subscription.create(req.body);
+
+    await Mail.sendMail({
+      to: `${meetup.user.name} <${meetup.user.email}>`,
+      subject: 'Subscription to meetup',
+      text: 'A new user was subscribed to meetup',
+    });
     return res.json(savedSubscription);
   }
 }
